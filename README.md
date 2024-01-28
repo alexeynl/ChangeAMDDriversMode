@@ -1,6 +1,6 @@
 # Intro
 
-## What is the modes?
+## What are the AMD graphic driver modes?
 
 Each mode is a combination of drivers dll's that is used by AMD graphic driver. AMD graphics driver installer chooses a mode during driver installation process according to your graphics card.
 
@@ -31,7 +31,7 @@ This Powershell script just automate those actions.
 # Requirements
 
 - Windows 10/11 (only 11 was tested at this moment)
-- Administration right. You must run script as Administrator (set registry setting requires this).
+- Administration right. You must run script as Administrator (set new registry settings requires this).
 
 # Warranty
 
