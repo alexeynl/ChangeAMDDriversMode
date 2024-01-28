@@ -3,7 +3,7 @@ function Get-AMDDriversMode {
     $D3DVendorName = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorName").D3DVendorName
     $D3DVendorName_dlls = ($D3DVendorName | ForEach-Object {Split-Path $_ -Leaf} | group).Name
     if ($D3DVendorName_dlls.Count -ne 2) {
-        "Something wrong with registry settings"
+        Write-Error -Message "Unexpected AMD drivers registry settings: more than 2 different dll's found in the key D3DVendorName or D3DVendorNameWoW" -ErrorAction Stop
         Return
     }
     $rdx_dlls = "atiumd64.dll", "atidxx64.dll"
@@ -30,7 +30,7 @@ function Get-AMDDriversMode {
     if ($drivers_mode) {
         return $drivers_mode
     } else {
-        "Something wrong with registry settings"
+        Write-Error -Message "Unexpected AMD drivers registry settings: could not detect drivers mode by D3DVendorName or D3DVendorNameWoW key value" -ErrorAction Stop
     }
 }
 
@@ -44,7 +44,7 @@ function Set-AMDDriversMode {
 
     #check if values is set to the registry
     if (($null -eq $D3DVendorNameWoW) -or ($null -eq $D3DVendorNameWoW)) {
-        "Something wrong with registry settings"
+        Write-Error -Message "Unexpected AMD drivers registry settings: D3DVendorName or D3DVendorNameWoW keys not exist or empty" -ErrorAction Stop
         Return
     }
 
@@ -54,7 +54,7 @@ function Set-AMDDriversMode {
 
     #only two different dlls names must be setted for each values
     if (($D3DVendorName_dlls.Count -ne 2) -or ($D3DVendorNameWoW_dlls.Count -ne 2)) {
-        "Something wrong with registry settings"
+        Write-Error -Message "Unexpected AMD drivers registry settings: more than 2 different dll's found in the key D3DVendorName or D3DVendorNameWoW" -ErrorAction Stop
         Return
     }
 
@@ -68,7 +68,7 @@ function Set-AMDDriversMode {
 
     #check if dll found according to the function input
     if ($null -eq $D3DVendorName_dlls) {
-        "Wrong function input"
+        Write-Error -Message "Wrong function input. Mode should be one of this value: rdx, rdx9dx11navi, dx9navirdx11, fullnavi" -ErrorAction Stop
         Return
     }
 
@@ -109,7 +109,7 @@ switch ($selected) {
     0 {$NewAMDDriversMode = "rdx"}
     1 {$NewAMDDriversMode = "rdx9dx11navi"}
     2 {$NewAMDDriversMode = "dx9navirdx11"}
-    3 {$NewAMDDriversMode = "fullnavi"}    
+    3 {$NewAMDDriversMode = "fullnavi"}
 }
 
 Set-AMDDriversMode $NewAMDDriversMode
