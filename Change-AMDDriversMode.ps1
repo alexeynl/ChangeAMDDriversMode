@@ -1,7 +1,17 @@
 #Requires -RunAsAdministrator
+
+$AMDDriverModes = @(
+    [pscustomobject]@{Id = "rdx";             Name = "Regular DX";                  Dlls = "atiumd64.dll", "atidxx64.dll"}
+    [pscustomobject]@{Id = "rdx9dx11navi";    Name = "Regular DX9 with DX11 NAVI";  Dlls = "atiumd64.dll", "amdxx64.dll"}
+    [pscustomobject]@{Id = "dx9navirdx11";    Name = "DX9 NAVI with Regular DX11";  Dlls = "amdxn64.dll", "atidxx64.dll"}
+    [pscustomobject]@{Id = "fullnavi";        Name = "Full DXNAVI";                 Dlls = "amdxn64.dll", "amdxx64.dll"}
+)
+
+$AMDDriverRegistryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000"
+
 function Get-AMDDriversMode {
-    $D3DVendorName = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorName").D3DVendorName
-    $D3DVendorName_dlls = ($D3DVendorName | ForEach-Object {Split-Path $_ -Leaf} | group).Name
+    $D3DVendorName = (Get-ItemProperty -Path $AMDDriverRegistryPath -Name "D3DVendorName").D3DVendorName
+    $D3DVendorName_dlls = ($D3DVendorName | ForEach-Object {Split-Path $_ -Leaf} | Group-Object).Name
     if ($D3DVendorName_dlls.Count -ne 2) {
         Write-Error -Message "Unexpected AMD drivers registry settings: more than 2 different dll's found in the key D3DVendorName or D3DVendorNameWoW" -ErrorAction Stop
         Return
@@ -39,8 +49,8 @@ function Set-AMDDriversMode {
     param ([String]$mode)
     
     #getting current value from the Windows registry
-    $D3DVendorName = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorName").D3DVendorName
-    $D3DVendorNameWoW = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorNameWoW").D3DVendorNameWoW
+    $D3DVendorName = (Get-ItemProperty -Path $AMDDriverRegistryPath -Name "D3DVendorName").D3DVendorName
+    $D3DVendorNameWoW = (Get-ItemProperty -Path $AMDDriverRegistryPath -Name "D3DVendorNameWoW").D3DVendorNameWoW
 
     #check if values is set to the registry
     if (($null -eq $D3DVendorNameWoW) -or ($null -eq $D3DVendorNameWoW)) {
@@ -49,8 +59,8 @@ function Set-AMDDriversMode {
     }
 
     #extract dlls paths from the reqistry value
-    $D3DVendorName_dlls = ($D3DVendorName | ForEach-Object {Split-Path $_ -Leaf} | group).Name
-    $D3DVendorNameWoW_dlls = ($D3DVendorNameWoW | ForEach-Object {Split-Path $_ -Leaf} | group).Name
+    $D3DVendorName_dlls = ($D3DVendorName | ForEach-Object {Split-Path $_ -Leaf} | Group-Object).Name
+    $D3DVendorNameWoW_dlls = ($D3DVendorNameWoW | ForEach-Object {Split-Path $_ -Leaf} | Group-Object).Name
 
     #only two different dlls names must be setted for each values
     if (($D3DVendorName_dlls.Count -ne 2) -or ($D3DVendorNameWoW_dlls.Count -ne 2)) {
@@ -81,21 +91,22 @@ function Set-AMDDriversMode {
     $D3DVendorNameWoW_paths = $($i=0; $D3DVendorNameWoW | ForEach-Object {Join-Path (Split-Path $_ -Parent) $D3DVendorNameWoW_dlls[$i].item(0);$i++})
 
     #setting new values to the Windows registry
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorName" -Value $D3DVendorName_paths
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorNameWoW" -Value $D3DVendorNameWoW_paths
+    Set-ItemProperty -Path $AMDDriverRegistryPath -Name "D3DVendorName" -Value $D3DVendorName_paths
+    Set-ItemProperty -Path $AMDDriverRegistryPath -Name "D3DVendorNameWoW" -Value $D3DVendorNameWoW_paths
     
 }
 
 function Restart-AMDVideo {
-    $d = Get-PnpDevice| where {($_.class -like "Display*") -and ($_.Name -like "AMD*")}
+    $d = Get-PnpDevice| Where-Object {($_.class -like "Display*") -and ($_.Name -like "AMD*")}
     $d  | Disable-PnpDevice -Confirm:$false
     $d  | Enable-PnpDevice -Confirm:$false
 }
 
-$CurrentAMDDriversMode = Get-AMDDriversMode
+$CurrentAMDDriversModeId = Get-AMDDriversMode
+$CurrentAMDDriversMode = $AMDDriverModes | Where-Object {$_.Id -eq $CurrentAMDDriversModeId}
 
 $Title = "Change AMD DirectX Driver Mode"
-$Info = "Your current AMD drivers mode is: " + $CurrentAMDDriversMode + [Environment]::NewLine
+$Info = "Your current AMD drivers mode is: " + $CurrentAMDDriversMode.Name + [Environment]::NewLine
 $Info = $Info + "Select new AMD Drivers Mode"
 $rdx = New-Object System.Management.Automation.Host.ChoiceDescription ("&1`b`bRegular DX", "Factory AMD Default For Polaris, Vega, and Ryzen Vega APU")
 $rdx9dx11navi = New-Object System.Management.Automation.Host.ChoiceDescription ("&2`b`bRegular DX9 with DX11 NAVI", "")
