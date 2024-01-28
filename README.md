@@ -16,15 +16,22 @@ Changing mode to "Regular DX" helps me decrease glitches and freezes with Browse
 
 # Description
 
-This Powershell script implements the following guide:
+You may change mode manually set registry settings according this guide:
 
 https://nimez-dxswitch.pages.dev/NzDXSwitch
+
+This Powershell script just automate those actions.
 
 ## What this script do?
 
 1. It reads Windows registry settings and detect current AMD graphics driver mode.
 2. It lets user to choose new AMD graphics driver mode and changes Windows registry according user input.
 3. It lets user to choose how to apply new setting: reload graphics driver or reboot PC.
+
+# Requirements
+
+- Windows 10/11 (only 11 was tested at this moment)
+- Administration right. You must run script as Administrator (set registry setting requires this).
 
 # Warranty
 
