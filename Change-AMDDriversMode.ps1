@@ -24,7 +24,7 @@ function Get-AMDDriversMode {
     }
 
     if ($null -eq (Compare-Object -ReferenceObject $D3DVendorName_dlls -DifferenceObject $fullnavi_dlls)) {
-        $drivers_mode = "fullnavi_dlls"
+        $drivers_mode = "fullnavi"
     }
 
     if ($drivers_mode) {
@@ -43,7 +43,7 @@ function Set-AMDDriversMode {
     $D3DVendorNameWoW = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000" -Name "D3DVendorNameWoW").D3DVendorNameWoW
 
     #check if values is set to the registry
-    if (($D3DVendorNameWoW -eq $null) -or ($D3DVendorNameWoW -eq $null)) {
+    if (($null -eq $D3DVendorNameWoW) -or ($null -eq $D3DVendorNameWoW)) {
         "Something wrong with registry settings"
         Return
     }
@@ -67,7 +67,7 @@ function Set-AMDDriversMode {
     }
 
     #check if dll found according to the function input
-    if ($D3DVendorName_dlls -eq $null) {
+    if ($null -eq $D3DVendorName_dlls) {
         "Wrong function input"
         Return
     }
@@ -115,7 +115,7 @@ switch ($selected) {
 Set-AMDDriversMode $NewAMDDriversMode
 
 $Title = "Choose action to apply changes"
-$Info = "New setting has bees set to the Windows registry"  + [Environment]::NewLine
+$Info = "New setting has been set to the Windows registry"  + [Environment]::NewLine
 $Info = $Info + "Please choose action if you want to apply setting now"
 $Opt_RestartVideo = New-Object System.Management.Automation.Host.ChoiceDescription ("&1`b`bReload AMD graphics driver", "Restart AMD Video device. This will apply setting without reboot")
 $Opt_Reboot = New-Object System.Management.Automation.Host.ChoiceDescription ("&2`b`bReboot my PC now", "Reboot PC")
