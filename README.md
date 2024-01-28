@@ -12,7 +12,7 @@ If you have AMD graphic card (including integrated graphics) and you are encount
 
 Many users [claims](https://www.reddit.com/r/Amd/comments/15ggbmw/amd_driver_2372_now_enables_dxnavi_by_default_for/)  that after changes to "Full DXNAVI" this improves games performance but for me those increase freezes in browsers.
 
-Changing mode to "Regular DX" helps me decrease glitches and freezes with Browsers and Telegram. I have Ryzen 6800h with integrated graphics (RNDA2).
+Changing mode to "Regular DX" helps me decrease [glitches and freezes](https://community.amd.com/t5/drivers-software/freezes-after-idle-in-applications-when-hardware-acceleration-is/m-p/656887) with Browsers and Telegram. I have Ryzen 6800h with integrated graphics (RNDA2).
 
 # Description
 
