@@ -86,10 +86,16 @@ function Set-AMDDriversMode {
     
 }
 
-$CurrentDriversMode = Get-AMDDriversMode
+function Restart-AMDVideo {
+    $d = Get-PnpDevice| where {($_.class -like "Display*") -and ($_.Name -like "AMD*")}
+    $d  | Disable-PnpDevice -Confirm:$false
+    $d  | Enable-PnpDevice -Confirm:$false
+}
+
+$CurrentAMDDriversMode = Get-AMDDriversMode
 
 $Title = "Change AMD DirectX Driver Mode"
-$Info = "Your current AMD drivers mode is: " + $CurrentDriversMode + [Environment]::NewLine
+$Info = "Your current AMD drivers mode is: " + $CurrentAMDDriversMode + [Environment]::NewLine
 $Info = $Info + "Select new AMD Drivers Mode"
 $rdx = New-Object System.Management.Automation.Host.ChoiceDescription ("&1`b`bRegular DX", "Factory AMD Default For Polaris, Vega, and Ryzen Vega APU")
 $rdx9dx11navi = New-Object System.Management.Automation.Host.ChoiceDescription ("&2`b`bRegular DX9 with DX11 NAVI", "")
@@ -98,6 +104,28 @@ $fullnavi = New-Object System.Management.Automation.Host.ChoiceDescription ("&4`
 $options = [System.Management.Automation.Host.ChoiceDescription[]]($rdx, $rdx9dx11navi, $dx9navirdx11, $fullnavi)
 $defaultchoice = 0
 $selected =  $host.UI.PromptForChoice($Title , $Info , $Options, $defaultchoice)
-$options[$selected]
 
-Set-AMDDriversMode "fullnavi"
+switch ($selected) {
+    0 {$NewAMDDriversMode = "rdx"}
+    1 {$NewAMDDriversMode = "rdx9dx11navi"}
+    2 {$NewAMDDriversMode = "dx9navirdx11"}
+    3 {$NewAMDDriversMode = "fullnavi"}    
+}
+
+Set-AMDDriversMode $NewAMDDriversMode
+
+$Title = "Choose action to apply changes"
+$Info = "New setting has bees set to the Windows registry"  + [Environment]::NewLine
+$Info = $Info + "Please choose action if you want to apply setting now"
+$Opt_RestartVideo = New-Object System.Management.Automation.Host.ChoiceDescription ("&1`b`bReload AMD graphics driver", "Restart AMD Video device. This will apply setting without reboot")
+$Opt_Reboot = New-Object System.Management.Automation.Host.ChoiceDescription ("&2`b`bReboot my PC now", "Reboot PC")
+$Opt_Nothing = New-Object System.Management.Automation.Host.ChoiceDescription ("&3`b`bDo not apply changes", "You need apply changes for yourself")
+$Opts = [System.Management.Automation.Host.ChoiceDescription[]]($Opt_RestartVideo, $Opt_Reboot, $Opt_Nothing)
+$defaultchoice = 0
+$selected =  $host.UI.PromptForChoice($Title , $Info , $Opts, $defaultchoice)
+
+switch ($selected) {
+    0 {Restart-AMDVideo}
+    1 {Restart-Computer}
+    2 {"Bye-bye"}  
+}
